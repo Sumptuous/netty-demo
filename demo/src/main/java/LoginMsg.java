@@ -1,10 +1,6 @@
 /**
  * Created by Administrator on 2017/5/5.
  */
-/**
- *
- * 登录验证类型的消息
- */
 public class LoginMsg extends BaseMsg {
     private String userName;
     private String password;

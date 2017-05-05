@@ -34,13 +34,11 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<BaseMsg> {
         if(MsgType.LOGIN.equals(baseMsg.getType())){
             LoginMsg loginMsg=(LoginMsg)baseMsg;
             if("lin".equals(loginMsg.getUserName())&&"alan".equals(loginMsg.getPassword())){
-                //登录成功,把channel存到服务端的map中
                 NettyChannelMap.add(loginMsg.getClientId(),(SocketChannel)channelHandlerContext.channel());
                 System.out.println("client"+loginMsg.getClientId()+" 登录成功");
             }
         }else{
             if(NettyChannelMap.get(baseMsg.getClientId())==null){
-                //说明未登录，或者连接断了，服务器向客户端发起登录请求，让客户端重新登录
                 LoginMsg loginMsg=new LoginMsg();
                 channelHandlerContext.channel().writeAndFlush(loginMsg);
             }
