@@ -1,6 +1,7 @@
 import io.netty.channel.Channel;
 import io.netty.channel.socket.SocketChannel;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,11 +17,12 @@ public class NettyChannelMap {
         return map.get(clientId);
     }
     public static void remove(SocketChannel socketChannel){
-        for (Map.Entry entry:map.entrySet()){
-            if (entry.getValue()==socketChannel){
-                map.remove(entry.getKey());
+        Iterator<Map.Entry<String, SocketChannel>> iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry entry = iterator.next();
+            if (entry.getValue().equals(socketChannel)) {
+                iterator.remove();
             }
         }
     }
-
 }
