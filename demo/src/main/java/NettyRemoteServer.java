@@ -18,7 +18,6 @@ import io.netty.util.concurrent.EventExecutorGroup;
  */
 public class NettyRemoteServer extends AbstractRemote {
     private int port;
-    private ServerSocketChannel serverSocketChannel;
     private static final EventExecutorGroup group = new DefaultEventExecutorGroup(12);
     public NettyRemoteServer(int port) throws InterruptedException {
         this.port = port;
@@ -37,16 +36,15 @@ public class NettyRemoteServer extends AbstractRemote {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 ChannelPipeline p = socketChannel.pipeline();
-                p.addLast(new IdleStateHandler(10,20,0));
+                p.addLast(group);
                 p.addLast(new ObjectEncoder());
                 p.addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                p.addLast(new IdleStateHandler(0,0,120));
                 p.addLast(new NettyServerHandler());
-                p.addLast(group);
             }
         });
         ChannelFuture f= bootstrap.bind(port).sync();
         if(f.isSuccess()){
-            serverSocketChannel = (ServerSocketChannel)f.channel();
             System.out.println("server start---------------");
         }
     }

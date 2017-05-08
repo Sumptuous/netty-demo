@@ -30,23 +30,23 @@ public class NettyRemoteClient extends AbstractRemote {
         EventLoopGroup eventLoopGroup=new NioEventLoopGroup();
         Bootstrap bootstrap=new Bootstrap();
         bootstrap.channel(NioSocketChannel.class);
-        bootstrap.option(ChannelOption.SO_KEEPALIVE,true);
         bootstrap.group(eventLoopGroup);
+        bootstrap.option(ChannelOption.TCP_NODELAY, true);
         bootstrap.remoteAddress(host,port);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new IdleStateHandler(20,10,0));
+                socketChannel.pipeline().addLast(group);
                 socketChannel.pipeline().addLast(new ObjectEncoder());
                 socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                socketChannel.pipeline().addLast(new IdleStateHandler(0,0,120));
                 socketChannel.pipeline().addLast(new NettyClientHandler());
-                socketChannel.pipeline().addLast(group);
             }
         });
         ChannelFuture future =bootstrap.connect(host,port).sync();
         if (future.isSuccess()) {
             socketChannel = (SocketChannel)future.channel();
-            System.out.println("connect server  成功---------");
+            System.out.println("connect server successfully---------");
         }
     }
 
