@@ -1,4 +1,5 @@
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.util.ReferenceCountUtil;
 
 /**
@@ -27,14 +28,9 @@ public class AbstractRemote {
     }
 
     private void processRequestCommand(ChannelHandlerContext channelHandlerContext, RemoteCommand request) {
-        RemoteCommand response = new ResponseRemoteCommand();
-        response.setClientId(request.getClientId());
-        if ("001".equals(request.getClientId())) {
-            response.setMessage("111");
-        } else {
-            response.setMessage("222");
-        }
-        channelHandlerContext.channel().writeAndFlush(response);
-        ReferenceCountUtil.release(request);
+        NettyChannel nettyChannel = new NettyChannel();
+        nettyChannel.setSocketChannel((SocketChannel) channelHandlerContext.channel());
+        nettyChannel.setRemoteCommand(request);
+        NettyChannelMap.add(request.getClientId(), nettyChannel);
     }
 }

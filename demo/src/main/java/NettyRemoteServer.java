@@ -1,7 +1,6 @@
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
@@ -12,6 +11,10 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by lotus on 2017/5/5.
@@ -87,6 +90,33 @@ public class NettyRemoteServer extends AbstractRemote {
         try {
             NettyRemoteServer remoteServer = new NettyRemoteServer(9999);
             remoteServer.serverStart();
+            while (true) {
+                Map<String, NettyChannel> nettyChannelMap = NettyChannelMap.getAll();
+                if (!nettyChannelMap.isEmpty()) {
+                    for (Map.Entry<String, NettyChannel> entry : nettyChannelMap.entrySet()) {
+                        if (!entry.getValue().getRemoteCommand().getMessageTypeList().isEmpty()) {
+                            for (MessageType type : entry.getValue().getRemoteCommand().getMessageTypeList()) {
+                                ResponseRemoteCommand response = new ResponseRemoteCommand();
+                                switch (type) {
+                                    case USER_MESSAGE: {
+                                        response.setClientId(entry.getKey());
+                                        response.setMessage("user");
+                                        break;
+                                    }
+                                    case SYSTEM_MESSAGE: {
+                                        response.setClientId(entry.getKey());
+                                        response.setMessage("system");
+                                        break;
+                                    }
+                                    default: break;
+                                }
+                                entry.getValue().getSocketChannel().writeAndFlush(response);
+                            }
+                        }
+                    }
+                }
+                TimeUnit.SECONDS.sleep(5);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -12,7 +12,9 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.concurrent.DefaultEventExecutorGroup;
 import io.netty.util.concurrent.EventExecutorGroup;
 
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Created by lotus on 2017/5/5.
@@ -81,13 +83,14 @@ public class NettyRemoteClient extends AbstractRemote {
         try {
             NettyRemoteClient remoteClient=new NettyRemoteClient(9999,"localhost");
             remoteClient.clientStart();
-            while (true) {
-                RequestRemoteCommand command = new RequestRemoteCommand();
-                command.setClientId("001");
-                remoteClient.socketChannel.writeAndFlush(command);
 
-                TimeUnit.SECONDS.sleep(5);
-            }
+            RequestRemoteCommand request = new RequestRemoteCommand();
+            request.setClientId("001");
+            List<MessageType> typeList = new ArrayList<MessageType>();
+            typeList.add(MessageType.SYSTEM_MESSAGE);
+            typeList.add(MessageType.USER_MESSAGE);
+            request.setMessageTypeList(typeList);
+            remoteClient.socketChannel.writeAndFlush(request);
         } catch (Exception e) {
             e.printStackTrace();
         }
