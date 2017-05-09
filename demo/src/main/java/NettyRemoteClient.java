@@ -29,6 +29,7 @@ public class NettyRemoteClient extends AbstractRemote {
         this.host = host;
     }
     public void clientStart() throws InterruptedException {
+        final NettyCoderFactory nettyCoderFactory = new NettyCoderFactory();
         EventLoopGroup eventLoopGroup=new NioEventLoopGroup();
         Bootstrap bootstrap=new Bootstrap();
         bootstrap.channel(NioSocketChannel.class);
@@ -39,8 +40,8 @@ public class NettyRemoteClient extends AbstractRemote {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
                 socketChannel.pipeline().addLast(group);
-                socketChannel.pipeline().addLast(new ObjectEncoder());
-                socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+                socketChannel.pipeline().addLast(nettyCoderFactory.getEncoder());
+                socketChannel.pipeline().addLast(nettyCoderFactory.getDecoder());
                 socketChannel.pipeline().addLast(new IdleStateHandler(0,0,120));
                 socketChannel.pipeline().addLast(new NettyClientHandler());
             }
